@@ -92,34 +92,32 @@ local function safeBuy(event, item)
     return success
 end
 
-Tab:CreateButton({
-    Name = "Hiển thị giá các cây (Inspect 1 lần)",
-    Callback = function()
-        local ReplicatedStorage = game:GetService("ReplicatedStorage")
-        local GameEvents = ReplicatedStorage:WaitForChild("GameEvents")
-        local MagnifyingGlassService_RE = GameEvents:WaitForChild("MagnifyingGlassService_RE")
+Tab:CreateButton("Hiển thị giá các cây (Inspect 1 lần)", function()
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local GameEvents = ReplicatedStorage:WaitForChild("GameEvents")
+    local MagnifyingGlassService_RE = GameEvents:WaitForChild("MagnifyingGlassService_RE")
 
-        local plantsFolder = workspace:WaitForChild("Farm"):WaitForChild("Farm"):WaitForChild("Important"):WaitForChild("Plants_Physical")
-        task.spawn(function()
-            for _, seedName in ipairs(seeds) do
-                local plantInstance = plantsFolder:FindFirstChild(seedName)
-                if plantInstance then
-                    local success, err = pcall(function()
-                        MagnifyingGlassService_RE:FireServer("TryInspect", plantInstance)
-                    end)
-                    if success then
-                        print("Đã gửi inspect cho: "..seedName)
-                    else
-                        warn("Lỗi gửi inspect cho "..seedName..": "..tostring(err))
-                    end
-                    task.wait(0.15)
+    local plantsFolder = workspace:WaitForChild("Farm"):WaitForChild("Farm"):WaitForChild("Important"):WaitForChild("Plants_Physical")
+    task.spawn(function()
+        for _, seedName in ipairs(seeds) do
+            local plantInstance = plantsFolder:FindFirstChild(seedName)
+            if plantInstance then
+                local success, err = pcall(function()
+                    MagnifyingGlassService_RE:FireServer("TryInspect", plantInstance)
+                end)
+                if success then
+                    print("Đã gửi inspect cho: "..seedName)
                 else
-                    warn("Không tìm thấy cây: "..seedName)
+                    warn("Lỗi gửi inspect cho "..seedName..": "..tostring(err))
                 end
+                task.wait(0.15)
+            else
+                warn("Không tìm thấy cây: "..seedName)
             end
-        end)
-    end
-})
+        end
+    end)
+end)
+
 -- Auto mua seeds, mỗi loại 10 lần
 task.spawn(function()
     while true do
