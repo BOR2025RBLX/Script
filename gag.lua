@@ -92,11 +92,13 @@ local function safeBuy(event, item)
     return success
 end
 
--- Thêm nút 1 lần inspect tất cả cây trong seeds để hiện giá
 Tab:CreateButton({
     Name = "Hiển thị giá các cây (Inspect 1 lần)",
     Callback = function()
-        -- Tìm cây trong workspace.Farm.Farm.Important.Plants_Physical theo tên seed rồi gửi sự kiện TryInspect
+        local ReplicatedStorage = game:GetService("ReplicatedStorage")
+        local GameEvents = ReplicatedStorage:WaitForChild("GameEvents")
+        local MagnifyingGlassService_RE = GameEvents:WaitForChild("MagnifyingGlassService_RE")
+
         local plantsFolder = workspace:WaitForChild("Farm"):WaitForChild("Farm"):WaitForChild("Important"):WaitForChild("Plants_Physical")
         task.spawn(function()
             for _, seedName in ipairs(seeds) do
@@ -110,7 +112,7 @@ Tab:CreateButton({
                     else
                         warn("Lỗi gửi inspect cho "..seedName..": "..tostring(err))
                     end
-                    task.wait(0.15) -- delay nhẹ tránh spam nhanh
+                    task.wait(0.15)
                 else
                     warn("Không tìm thấy cây: "..seedName)
                 end
@@ -118,7 +120,6 @@ Tab:CreateButton({
         end)
     end
 })
-
 -- Auto mua seeds, mỗi loại 10 lần
 task.spawn(function()
     while true do
