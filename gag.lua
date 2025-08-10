@@ -94,37 +94,31 @@ end
 
 local inspected = false
 
-Tab:CreateToggle({
-    Name = "Inspect giá cây (1 lần)",
-    CurrentValue = false,
-    Flag = "InspectOneTime",
-    Callback = function(state)
-        if state and not inspected then
-            inspected = true
-            local ReplicatedStorage = game:GetService("ReplicatedStorage")
-            local GameEvents = ReplicatedStorage:WaitForChild("GameEvents")
-            local MagnifyingGlassService_RE = GameEvents:WaitForChild("MagnifyingGlassService_RE")
+-- Kiểm tra xem hàm CreateButton có tồn tại không
+print("CreateButton is", typeof(Tab.CreateButton))
 
-            local plantsFolder = workspace:WaitForChild("Farm"):WaitForChild("Farm"):WaitForChild("Important"):WaitForChild("Plants_Physical")
-            task.spawn(function()
-                for _, seedName in ipairs(seeds) do
-                    local plantInstance = plantsFolder:FindFirstChild(seedName)
-                    if plantInstance then
-                        pcall(function()
-                            MagnifyingGlassService_RE:FireServer("TryInspect", plantInstance)
-                        end)
-                        task.wait(0.15)
-                    end
-                end
-                print("Đã inspect xong tất cả cây.")
-            end)
-            -- Tự động tắt toggle để dùng lại sau
-            Tab.Flags.InspectOneTime = false
-            inspected = false
+if typeof(Tab.CreateButton) == "function" then
+    Tab:CreateButton({
+        Name = "Nút test",
+        Callback = function()
+            print("Bạn đã bấm nút test!")
         end
-    end
-})
-
+    })
+else
+    warn("Rayfield không hỗ trợ nút bấm, thử dùng toggle thay thế.")
+    -- Dùng toggle thay thế
+    Tab:CreateToggle({
+        Name = "Toggle test (nhấn để chạy)",
+        CurrentValue = false,
+        Callback = function(state)
+            if state then
+                print("Toggle test được bật")
+                -- Tắt toggle sau khi chạy xong
+                Tab.Flags["Toggle test (nhấn để chạy)"] = false
+            end
+        end
+    })
+end
 
 -- Auto mua seeds, mỗi loại 10 lần
 task.spawn(function()
