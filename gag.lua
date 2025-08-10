@@ -1,7 +1,5 @@
--- Load Rayfield Library
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
--- Tạo Window
 local Window = Rayfield:CreateWindow({
     Name = "Grow A Garden v1714",
     LoadingTitle = "Grow A Garden Script",
@@ -14,11 +12,9 @@ local Window = Rayfield:CreateWindow({
     KeySystem = false
 })
 
--- Tab Shop
 local Tab = Window:CreateTab("Shop", 4483362458)
 Tab:CreateSection("Mua tất cả hạt giống")
 
--- Danh sách seeds
 local seeds = {
     "Carrot", "Strawberry", "Blueberry", "Orange Tulip", "Tomato", "Corn",
     "Daffodil", "Watermelon", "Pumpkin", "Apple", "Bamboo", "Coconut",
@@ -27,7 +23,6 @@ local seeds = {
     "Giant Pinecone", "Elder Strawberry"
 }
 
--- Danh sách gear
 local gears = {
     "Watering Can", "Trading Ticket", "Trowel", "Recall Wrench",
     "Basic Sprinkler", "Advanced Sprinkler", "Medium Toy", "Medium Treat",
@@ -39,7 +34,6 @@ local gears = {
 local autoBuySeeds = false
 local autoBuyGear = false
 
--- Toggle auto mua tất cả hạt giống
 Tab:CreateToggle({
     Name = "Tự động mua tất cả hạt giống",
     CurrentValue = false,
@@ -49,10 +43,8 @@ Tab:CreateToggle({
     end
 })
 
--- Tạo section mới cho gear
 Tab:CreateSection("Mua tất cả gear")
 
--- Toggle auto mua tất cả gear
 Tab:CreateToggle({
     Name = "Tự động mua tất cả gear",
     CurrentValue = false,
@@ -62,38 +54,53 @@ Tab:CreateToggle({
     end
 })
 
--- Loop chạy nền mua hạt giống
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local BuySeedEvent = ReplicatedStorage.GameEvents:WaitForChild("BuySeedStock")
+local BuyGearEvent = ReplicatedStorage.GameEvents:WaitForChild("BuyGearStock")
+
+local function safeBuy(event, item)
+    local success, err = pcall(function()
+        event:FireServer(item)
+    end)
+    if not success then
+        warn("[AutoBuy] Lỗi khi mua "..item..": "..tostring(err))
+    end
+    return success
+end
+
 task.spawn(function()
-    while task.wait() do
+    while true do
+        task.wait(0.05) -- delay nhỏ đủ để tránh lag
         if autoBuySeeds then
             for _, seed in ipairs(seeds) do
                 if not autoBuySeeds then break end
-                for i = 1, 1000 do
-                    if not autoBuySeeds then break end
-                    game:GetService("ReplicatedStorage").GameEvents.BuySeedStock:FireServer(seed)
-                    task.wait()
+                local bought = true
+                while bought and autoBuySeeds do
+                    -- Gửi request mua, nếu lỗi (giả định hết hàng) thì thôi
+                    bought = safeBuy(BuySeedEvent, seed)
+                    task.wait(0.05)
                 end
             end
         else
-            task.wait(0)
+            task.wait(0.2)
         end
     end
 end)
 
--- Loop chạy nền mua gear
 task.spawn(function()
-    while task.wait() do
+    while true do
+        task.wait(0.05)
         if autoBuyGear then
             for _, gear in ipairs(gears) do
                 if not autoBuyGear then break end
-                for i = 1, 1000 do
-                    if not autoBuyGear then break end
-                    game:GetService("ReplicatedStorage").GameEvents.BuyGearStock:FireServer(gear)
-                    task.wait()
+                local bought = true
+                while bought and autoBuyGear do
+                    bought = safeBuy(BuyGearEvent, gear)
+                    task.wait(0.05)
                 end
             end
         else
-            task.wait(0)
+            task.wait(0.2)
         end
     end
 end)
