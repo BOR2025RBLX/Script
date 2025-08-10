@@ -9,7 +9,8 @@ local Window = Rayfield:CreateWindow({
        FolderName = "MyScripts",
        FileName = "MyUIConfig"
     },
-    KeySystem = false
+    KeySystem = false,
+    Theme = "DarkBlue"  -- Đây nhé, thêm dòng này để dùng theme Dark Blue
 })
 
 local Tab = Window:CreateTab("Shop", 4483362458)
