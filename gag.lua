@@ -10,7 +10,7 @@ local Window = Rayfield:CreateWindow({
        FileName = "MyUIConfig"
     },
     KeySystem = false,
-    Theme = "Ocean"  -- Đây nhé, thêm dòng này để dùng theme Dark Blue
+    Theme = "Ocean"
 })
 
 local Tab = Window:CreateTab("Shop", 4483362458)
@@ -45,6 +45,25 @@ local autoBuySeeds = false
 local autoBuyGear = false
 local autoBuyEggs = false
 
+-- Biến global service
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local GameEvents = ReplicatedStorage:WaitForChild("GameEvents")
+local BuySeedEvent = GameEvents:WaitForChild("BuySeedStock")
+local BuyGearEvent = GameEvents:WaitForChild("BuyGearStock")
+local BuyEggEvent = GameEvents:WaitForChild("BuyPetEgg")
+local MagnifyingGlassService_RE = GameEvents:WaitForChild("MagnifyingGlassService_RE")
+
+local function safeBuy(event, item)
+    local success, err = pcall(function()
+        event:FireServer(item)
+    end)
+    if not success then
+        warn("[AutoBuy] Lỗi khi mua "..item..": "..tostring(err))
+    end
+    return success
+end
+
+-- Tạo các toggle mua tự động
 Tab:CreateToggle({
     Name = "Tự động mua Seed Shop",
     CurrentValue = false,
@@ -76,51 +95,59 @@ Tab:CreateToggle({
     end
 })
 
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local BuySeedEvent = ReplicatedStorage.GameEvents:WaitForChild("BuySeedStock")
-local BuyGearEvent = ReplicatedStorage.GameEvents:WaitForChild("BuyGearStock")
-local BuyEggEvent = ReplicatedStorage.GameEvents:WaitForChild("BuyPetEgg")
-local MagnifyingGlassService_RE = GameEvents:WaitForChild("MagnifyingGlassService_RE")
-
-local function safeBuy(event, item)
-    local success, err = pcall(function()
-        event:FireServer(item)
-    end)
-    if not success then
-        warn("[AutoBuy] Lỗi khi mua "..item..": "..tostring(err))
-    end
-    return success
-end
-
-local inspected = false
-
--- Kiểm tra xem hàm CreateButton có tồn tại không
-print("CreateButton is", typeof(Tab.CreateButton))
-
+-- Tạo nút inspect 1 lần
 if typeof(Tab.CreateButton) == "function" then
     Tab:CreateButton({
-        Name = "Nút test",
+        Name = "Hiển thị giá các cây (Inspect 1 lần)",
         Callback = function()
-            print("Bạn đã bấm nút test!")
+            local plantsFolder = workspace:WaitForChild("Farm"):WaitForChild("Farm"):WaitForChild("Important"):WaitForChild("Plants_Physical")
+            task.spawn(function()
+                for _, seedName in ipairs(seeds) do
+                    local plantInstance = plantsFolder:FindFirstChild(seedName)
+                    if plantInstance then
+                        local success, err = pcall(function()
+                            MagnifyingGlassService_RE:FireServer("TryInspect", plantInstance)
+                        end)
+                        if success then
+                            print("Đã gửi inspect cho: "..seedName)
+                        else
+                            warn("Lỗi gửi inspect cho "..seedName..": "..tostring(err))
+                        end
+                        task.wait(0.15)
+                    else
+                        warn("Không tìm thấy cây: "..seedName)
+                    end
+                end
+            end)
         end
     })
 else
-    warn("Rayfield không hỗ trợ nút bấm, thử dùng toggle thay thế.")
-    -- Dùng toggle thay thế
+    warn("CreateButton không khả dụng, tạo toggle thay thế")
     Tab:CreateToggle({
-        Name = "Toggle test (nhấn để chạy)",
+        Name = "Inspect giá cây (1 lần)",
         CurrentValue = false,
         Callback = function(state)
             if state then
-                print("Toggle test được bật")
-                -- Tắt toggle sau khi chạy xong
-                Tab.Flags["Toggle test (nhấn để chạy)"] = false
+                local plantsFolder = workspace:WaitForChild("Farm"):WaitForChild("Farm"):WaitForChild("Important"):WaitForChild("Plants_Physical")
+                task.spawn(function()
+                    for _, seedName in ipairs(seeds) do
+                        local plantInstance = plantsFolder:FindFirstChild(seedName)
+                        if plantInstance then
+                            pcall(function()
+                                MagnifyingGlassService_RE:FireServer("TryInspect", plantInstance)
+                            end)
+                            task.wait(0.15)
+                        end
+                    end
+                    print("Đã inspect xong tất cả cây.")
+                end)
+                Tab.Flags["Inspect giá cây (1 lần)"] = false
             end
         end
     })
 end
 
--- Auto mua seeds, mỗi loại 10 lần
+-- Auto mua seeds
 task.spawn(function()
     while true do
         if autoBuySeeds then
@@ -143,7 +170,7 @@ task.spawn(function()
     end
 end)
 
--- Auto mua gear, mỗi loại 10 lần
+-- Auto mua gear
 task.spawn(function()
     while true do
         if autoBuyGear then
@@ -166,7 +193,7 @@ task.spawn(function()
     end
 end)
 
--- Auto mua trứng, mỗi loại tối đa 3 quả
+-- Auto mua trứng
 task.spawn(function()
     while true do
         if autoBuyEggs then
