@@ -80,6 +80,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local BuySeedEvent = ReplicatedStorage.GameEvents:WaitForChild("BuySeedStock")
 local BuyGearEvent = ReplicatedStorage.GameEvents:WaitForChild("BuyGearStock")
 local BuyEggEvent = ReplicatedStorage.GameEvents:WaitForChild("BuyPetEgg")
+local MagnifyingGlassService_RE = GameEvents:WaitForChild("MagnifyingGlassService_RE")
 
 local function safeBuy(event, item)
     local success, err = pcall(function()
@@ -159,3 +160,30 @@ task.spawn(function()
         end
     end
 end)
+
+-- Thêm nút 1 lần inspect tất cả cây trong seeds để hiện giá
+Tab:CreateButton({
+    Name = "Hiển thị giá các cây (Inspect 1 lần)",
+    Callback = function()
+        -- Tìm cây trong workspace.Farm.Farm.Important.Plants_Physical theo tên seed rồi gửi sự kiện TryInspect
+        local plantsFolder = workspace:WaitForChild("Farm"):WaitForChild("Farm"):WaitForChild("Important"):WaitForChild("Plants_Physical")
+        task.spawn(function()
+            for _, seedName in ipairs(seeds) do
+                local plantInstance = plantsFolder:FindFirstChild(seedName)
+                if plantInstance then
+                    local success, err = pcall(function()
+                        MagnifyingGlassService_RE:FireServer("TryInspect", plantInstance)
+                    end)
+                    if success then
+                        print("Đã gửi inspect cho: "..seedName)
+                    else
+                        warn("Lỗi gửi inspect cho "..seedName..": "..tostring(err))
+                    end
+                    task.wait(0.15) -- delay nhẹ tránh spam nhanh
+                else
+                    warn("Không tìm thấy cây: "..seedName)
+                end
+            end
+        end)
+    end
+})
