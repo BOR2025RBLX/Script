@@ -68,17 +68,22 @@ local function safeBuy(event, item)
     return success
 end
 
+-- Task mua seeds: mỗi loại 10 lần rồi sang loại khác, lặp lại từ đầu
 task.spawn(function()
     while true do
-        task.wait(0.05) -- delay nhỏ đủ để tránh lag
         if autoBuySeeds then
             for _, seed in ipairs(seeds) do
                 if not autoBuySeeds then break end
-                local bought = true
-                while bought and autoBuySeeds do
-                    -- Gửi request mua, nếu lỗi (giả định hết hàng) thì thôi
-                    bought = safeBuy(BuySeedEvent, seed)
-                    task.wait(0.05)
+                local boughtCount = 0
+                while boughtCount < 10 and autoBuySeeds do
+                    local success = safeBuy(BuySeedEvent, seed)
+                    if not success then
+                        -- Nếu không mua được, tạm dừng để tránh spam
+                        task.wait(0.5)
+                    else
+                        boughtCount = boughtCount + 1
+                        task.wait(0.05)
+                    end
                 end
             end
         else
@@ -87,16 +92,21 @@ task.spawn(function()
     end
 end)
 
+-- Task mua gear: mỗi loại 10 lần rồi sang loại khác, lặp lại từ đầu
 task.spawn(function()
     while true do
-        task.wait(0.05)
         if autoBuyGear then
             for _, gear in ipairs(gears) do
                 if not autoBuyGear then break end
-                local bought = true
-                while bought and autoBuyGear do
-                    bought = safeBuy(BuyGearEvent, gear)
-                    task.wait(0.05)
+                local boughtCount = 0
+                while boughtCount < 10 and autoBuyGear do
+                    local success = safeBuy(BuyGearEvent, gear)
+                    if not success then
+                        task.wait(0.5)
+                    else
+                        boughtCount = boughtCount + 1
+                        task.wait(0.05)
+                    end
                 end
             end
         else
