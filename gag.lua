@@ -13,7 +13,7 @@ local Window = Rayfield:CreateWindow({
 })
 
 local Tab = Window:CreateTab("Shop", 4483362458)
-Tab:CreateSection("Mua tất cả hạt giống")
+Tab:CreateSection("Tự động mua")
 
 local seeds = {
     "Carrot", "Strawberry", "Blueberry", "Orange Tulip", "Tomato", "Corn",
@@ -53,10 +53,10 @@ Tab:CreateToggle({
     end
 })
 
-Tab:CreateSection("Mua tất cả gear")
+Tab:CreateSection("Tự động mua")
 
 Tab:CreateToggle({
-    Name = "Tự động mua Gear Sho[",
+    Name = "Tự động mua Gear Shop",
     CurrentValue = false,
     Flag = "AutoBuyGearToggle",
     Callback = function(state)
@@ -64,7 +64,7 @@ Tab:CreateToggle({
     end
 })
 
-Tab:CreateSection("Mua tất cả trứng")
+Tab:CreateSection("Tự động mua")
 
 Tab:CreateToggle({
     Name = "Mua tất cả Egg Shop",
