@@ -67,7 +67,7 @@ Tab:CreateToggle({
 Tab:CreateSection("Tự động mua")
 
 Tab:CreateToggle({
-    Name = "Mua tất cả Egg Shop",
+    Name = "Tự động mua Egg Shop",
     CurrentValue = false,
     Flag = "AutoBuyEggsToggle",
     Callback = function(state)
