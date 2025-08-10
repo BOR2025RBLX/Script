@@ -1,22 +1,24 @@
-local OrionLib = loadstring(game:HttpGet('https://raw.githubusercontent.com/jensonhirst/Orion/main/source'))()
+-- Load Rayfield Library
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
-local Window = OrionLib:MakeWindow({
-    Name = "Grow A Garden Auto Buy",
-    HidePremium = false,
-    SaveConfig = true,
-    ConfigFolder = "AutoBuyConfig"
+-- Tạo Window
+local Window = Rayfield:CreateWindow({
+    Name = "Grow A Garden v1714",
+    LoadingTitle = "Grow A Garden Script",
+    LoadingSubtitle = "By Chi",
+    ConfigurationSaving = {
+       Enabled = true,
+       FolderName = "MyScripts",
+       FileName = "MyUIConfig"
+    },
+    KeySystem = false
 })
 
-local Tab = Window:MakeTab({
-    Name = "Shop",
-    Icon = "rbxassetid://4483362458",
-    PremiumOnly = false
-})
+-- Tab Shop
+local Tab = Window:CreateTab("Shop", 4483362458)
+Tab:CreateSection("Mua tất cả hạt giống")
 
-Tab:AddSection({
-    Name = "Auto Buy Settings"
-})
-
+-- Danh sách seeds
 local seeds = {
     "Carrot", "Strawberry", "Blueberry", "Orange Tulip", "Tomato", "Corn",
     "Daffodil", "Watermelon", "Pumpkin", "Apple", "Bamboo", "Coconut",
@@ -25,6 +27,7 @@ local seeds = {
     "Giant Pinecone", "Elder Strawberry"
 }
 
+-- Danh sách gear
 local gears = {
     "Watering Can", "Trading Ticket", "Trowel", "Recall Wrench",
     "Basic Sprinkler", "Advanced Sprinkler", "Medium Toy", "Medium Treat",
@@ -33,53 +36,42 @@ local gears = {
     "Levelup Lolipop"
 }
 
--- Toggle tự động mua seed
-local autoBuySeedsToggle = Tab:AddToggle({
+local autoBuySeeds = false
+local autoBuyGear = false
+
+-- Toggle auto mua tất cả hạt giống
+Tab:CreateToggle({
     Name = "Tự động mua tất cả hạt giống",
-    Default = false,
-    Save = true,
-    Flag = "AutoBuySeeds",
-    Callback = function(value)
-        -- Nếu muốn, có thể thêm xử lý khi bật/tắt toggle
+    CurrentValue = false,
+    Flag = "AutoBuySeedsToggle",
+    Callback = function(state)
+        autoBuySeeds = state
     end
 })
 
--- Toggle tự động mua gear
-local autoBuyGearsToggle = Tab:AddToggle({
+-- Tạo section mới cho gear
+Tab:CreateSection("Mua tất cả gear")
+
+-- Toggle auto mua tất cả gear
+Tab:CreateToggle({
     Name = "Tự động mua tất cả gear",
-    Default = false,
-    Save = true,
-    Flag = "AutoBuyGears",
-    Callback = function(value)
-        -- Nếu muốn, có thể thêm xử lý khi bật/tắt toggle
+    CurrentValue = false,
+    Flag = "AutoBuyGearToggle",
+    Callback = function(state)
+        autoBuyGear = state
     end
 })
 
--- Hàm an toàn gọi event mua
-local function safeBuy(eventName, itemName)
-    local success, err = pcall(function()
-        local event = game:GetService("ReplicatedStorage").GameEvents:FindFirstChild(eventName)
-        if event then
-            event:FireServer(itemName)
-        else
-            warn("[AutoBuy] Không tìm thấy event "..eventName)
-        end
-    end)
-    if not success then
-        warn("[AutoBuy] Lỗi khi mua "..itemName..": "..tostring(err))
-    end
-end
-
--- Task chạy nền auto mua seed
+-- Loop chạy nền mua hạt giống
 task.spawn(function()
-    while task.wait(0.5) do
-        if OrionLib.Flags["AutoBuySeeds"].Value then
+    while task.wait() do
+        if autoBuySeeds then
             for _, seed in ipairs(seeds) do
-                if not OrionLib.Flags["AutoBuySeeds"].Value then break end
-                for i = 1, 10 do -- mua 10 lần mỗi seed tránh spam quá nhiều
-                    if not OrionLib.Flags["AutoBuySeeds"].Value then break end
-                    safeBuy("BuySeedStock", seed)
-                    task.wait(0.1)
+                if not autoBuySeeds then break end
+                for i = 1, 1000 do
+                    if not autoBuySeeds then break end
+                    game:GetService("ReplicatedStorage").GameEvents.BuySeedStock:FireServer(seed)
+                    task.wait()
                 end
             end
         else
@@ -88,16 +80,16 @@ task.spawn(function()
     end
 end)
 
--- Task chạy nền auto mua gear
+-- Loop chạy nền mua gear
 task.spawn(function()
-    while task.wait(0.5) do
-        if OrionLib.Flags["AutoBuyGears"].Value then
+    while task.wait() do
+        if autoBuyGear then
             for _, gear in ipairs(gears) do
-                if not OrionLib.Flags["AutoBuyGears"].Value then break end
-                for i = 1, 10 do -- mua 10 lần mỗi gear
-                    if not OrionLib.Flags["AutoBuyGears"].Value then break end
-                    safeBuy("BuyGearStock", gear)
-                    task.wait(0.1)
+                if not autoBuyGear then break end
+                for i = 1, 1000 do
+                    if not autoBuyGear then break end
+                    game:GetService("ReplicatedStorage").GameEvents.BuyGearStock:FireServer(gear)
+                    task.wait()
                 end
             end
         else
@@ -105,5 +97,3 @@ task.spawn(function()
         end
     end
 end)
-
-OrionLib:Init()
