@@ -10,7 +10,7 @@ local Window = Rayfield:CreateWindow({
        FileName = "MyUIConfig"
     },
     KeySystem = false,
-    Theme = "DarkBlue"  -- Đây nhé, thêm dòng này để dùng theme Dark Blue
+    Theme = "Ocean"  -- Đây nhé, thêm dòng này để dùng theme Dark Blue
 })
 
 local Tab = Window:CreateTab("Shop", 4483362458)
