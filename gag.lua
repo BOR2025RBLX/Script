@@ -31,11 +31,21 @@ local gears = {
     "Levelup Lolipop"
 }
 
+local eggs = {
+    "Common Egg",
+    "Common Summer Egg",
+    "Rare Summer Egg",
+    "Mythical Egg",
+    "Paradise Egg",
+    "Bug Egg"
+}
+
 local autoBuySeeds = false
 local autoBuyGear = false
+local autoBuyEggs = false
 
 Tab:CreateToggle({
-    Name = "Tự động mua tất cả hạt giống",
+    Name = "Tự động mua Seed Shop",
     CurrentValue = false,
     Flag = "AutoBuySeedsToggle",
     Callback = function(state)
@@ -46,7 +56,7 @@ Tab:CreateToggle({
 Tab:CreateSection("Mua tất cả gear")
 
 Tab:CreateToggle({
-    Name = "Tự động mua tất cả gear",
+    Name = "Tự động mua Gear Sho[",
     CurrentValue = false,
     Flag = "AutoBuyGearToggle",
     Callback = function(state)
@@ -54,9 +64,21 @@ Tab:CreateToggle({
     end
 })
 
+Tab:CreateSection("Mua tất cả trứng")
+
+Tab:CreateToggle({
+    Name = "Mua tất cả Egg Shop",
+    CurrentValue = false,
+    Flag = "AutoBuyEggsToggle",
+    Callback = function(state)
+        autoBuyEggs = state
+    end
+})
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local BuySeedEvent = ReplicatedStorage.GameEvents:WaitForChild("BuySeedStock")
 local BuyGearEvent = ReplicatedStorage.GameEvents:WaitForChild("BuyGearStock")
+local BuyEggEvent = ReplicatedStorage.GameEvents:WaitForChild("BuyPetEgg")
 
 local function safeBuy(event, item)
     local success, err = pcall(function()
@@ -68,7 +90,7 @@ local function safeBuy(event, item)
     return success
 end
 
--- Task mua seeds: mỗi loại 10 lần rồi sang loại khác, lặp lại từ đầu
+-- Auto mua seeds, mỗi loại 10 lần
 task.spawn(function()
     while true do
         if autoBuySeeds then
@@ -78,7 +100,6 @@ task.spawn(function()
                 while boughtCount < 10 and autoBuySeeds do
                     local success = safeBuy(BuySeedEvent, seed)
                     if not success then
-                        -- Nếu không mua được, tạm dừng để tránh spam
                         task.wait(0.5)
                     else
                         boughtCount = boughtCount + 1
@@ -92,7 +113,7 @@ task.spawn(function()
     end
 end)
 
--- Task mua gear: mỗi loại 10 lần rồi sang loại khác, lặp lại từ đầu
+-- Auto mua gear, mỗi loại 10 lần
 task.spawn(function()
     while true do
         if autoBuyGear then
@@ -101,6 +122,29 @@ task.spawn(function()
                 local boughtCount = 0
                 while boughtCount < 10 and autoBuyGear do
                     local success = safeBuy(BuyGearEvent, gear)
+                    if not success then
+                        task.wait(0.5)
+                    else
+                        boughtCount = boughtCount + 1
+                        task.wait(0.05)
+                    end
+                end
+            end
+        else
+            task.wait(0.2)
+        end
+    end
+end)
+
+-- Auto mua trứng, mỗi loại tối đa 3 quả
+task.spawn(function()
+    while true do
+        if autoBuyEggs then
+            for _, egg in ipairs(eggs) do
+                if not autoBuyEggs then break end
+                local boughtCount = 0
+                while boughtCount < 3 and autoBuyEggs do
+                    local success = safeBuy(BuyEggEvent, egg)
                     if not success then
                         task.wait(0.5)
                     else
