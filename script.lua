@@ -1,99 +1,37 @@
--- Load Rayfield Library
+-- Load Rayfield UI
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
--- Tạo Window
+-- Tạo cửa sổ
 local Window = Rayfield:CreateWindow({
-    Name = "Grow A Garden v1714",
-    LoadingTitle = "Grow A Garden Script",
+    Name = "Hide and Seek Hack",
+    LoadingTitle = "Hide and Seek Script",
     LoadingSubtitle = "By Chi",
     ConfigurationSaving = {
-       Enabled = true,
-       FolderName = "MyScripts",
-       FileName = "MyUIConfig"
+        Enabled = true,
+        FolderName = "MyScripts",
+        FileName = "HideAndSeekUI"
     },
     KeySystem = false
 })
 
--- Tab Shop
-local Tab = Window:CreateTab("Shop", 4483362458)
-Tab:CreateSection("Mua tất cả hạt giống")
+-- Tạo tab chính
+local Tab = Window:CreateTab("Main", 4483362458)
+Tab:CreateSection("Cheat Functions")
 
--- Danh sách seeds
-local seeds = {
-    "Carrot", "Strawberry", "Blueberry", "Orange Tulip", "Tomato", "Corn",
-    "Daffodil", "Watermelon", "Pumpkin", "Apple", "Bamboo", "Coconut",
-    "Cactus", "Dragonfruit", "Mango", "Grape", "Mushroom", "Pepper",
-    "Cacao", "Beanstalk", "Ember Lily", "Sugar Apple", "Burning Bud",
-    "Giant Pinecone", "Elder Strawberry"
-}
-
--- Danh sách gear
-local gears = {
-    "Watering Can", "Trading Ticket", "Trowel", "Recall Wrench",
-    "Basic Sprinkler", "Advanced Sprinkler", "Medium Toy", "Medium Treat",
-    "Godly Sprinkler", "Magnifying Glass", "Master Sprinkler", "Cleaning Spray",
-    "Favourite Tool", "Harvest Tool", "Friendship Pot", "Grandmaster Sprinkler",
-    "Levelup Lolipop"
-}
-
-local autoBuySeeds = false
-local autoBuyGear = false
-
--- Toggle auto mua tất cả hạt giống
-Tab:CreateToggle({
-    Name = "Tự động mua tất cả hạt giống",
-    CurrentValue = false,
-    Flag = "AutoBuySeedsToggle",
-    Callback = function(state)
-        autoBuySeeds = state
+-- Nút Reload = 0
+Tab:CreateButton({
+    Name = "Instant Reload",
+    Callback = function()
+        -- Gửi remote reload
+        game:GetService("ReplicatedStorage").Assets.Blaster.Remotes.Reload:FireServer()
     end
 })
 
--- Tạo section mới cho gear
-Tab:CreateSection("Mua tất cả gear")
-
--- Toggle auto mua tất cả gear
-Tab:CreateToggle({
-    Name = "Tự động mua tất cả gear",
-    CurrentValue = false,
-    Flag = "AutoBuyGearToggle",
-    Callback = function(state)
-        autoBuyGear = state
+-- Nút Reveal ESP Hiders
+Tab:CreateButton({
+    Name = "Show Hider ESP",
+    Callback = function()
+        -- Gửi remote reveal hiders
+        game:GetService("ReplicatedStorage").Network["PlayerMarkers/RevealHiders"]:FireServer()
     end
 })
-
--- Loop chạy nền mua hạt giống
-task.spawn(function()
-    while task.wait() do
-        if autoBuySeeds then
-            for _, seed in ipairs(seeds) do
-                if not autoBuySeeds then break end
-                for i = 1, 1000 do
-                    if not autoBuySeeds then break end
-                    game:GetService("ReplicatedStorage").GameEvents.BuySeedStock:FireServer(seed)
-                    task.wait()
-                end
-            end
-        else
-            task.wait(1)
-        end
-    end
-end)
-
--- Loop chạy nền mua gear
-task.spawn(function()
-    while task.wait() do
-        if autoBuyGear then
-            for _, gear in ipairs(gears) do
-                if not autoBuyGear then break end
-                for i = 1, 1000 do
-                    if not autoBuyGear then break end
-                    game:GetService("ReplicatedStorage").GameEvents.BuyGearStock:FireServer(gear)
-                    task.wait()
-                end
-            end
-        else
-            task.wait(1)
-        end
-    end
-end)
